@@ -9,6 +9,11 @@ library(lme4)
 library(lmerTest)
 library(emmeans)
 
+library(ggsignif)
+
+
+
+
 #Import and read table
 gadata = read.table("Genes e Adaptação - Folha1.csv", header = T, sep = ";" ,stringsAsFactors = TRUE, dec = ",", na.strings =  "NA")
 gadata
@@ -70,7 +75,7 @@ ola
 
 #Model for SexRation
   
-  lm_SR = glmmTMB(cbind(Nr_Female, Nr_Male) ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = "binomial") #NA cant figure that out 
+lm_SR = glmmTMB(cbind(Nr_Female, Nr_Male) ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = "binomial") #NA cant figure that out 
 
 summary(lm_SR)
 
@@ -80,21 +85,26 @@ emmeans(lm_SR,specs =pairwise~Temp:PopStruct ,type= "response")
 
 #Model for HatchingRate
 
-lm_SR = glmmTMB(cbind(Nr_Eggs, Nr_Juv) ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = "binomial") #NA cant figure that out 
+lm_HR = glmmTMB(cbind(Nr_Eggs, Nr_Juv) ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = "binomial") #NA cant figure that out 
 
-summary(lm_SR)
+summary(lm_HR)
 
-Anova(lm_SR)
-emmeans(lm_SR,specs =pairwise~Temp:PopStruct ,type= "response")
+Anova(lm_HR)
+emmeans(lm_HR,specs =pairwise~Temp:PopStruct ,type= "response")
 
 #model for fecundity 
 
-lm_F = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom1)
+lm_FP = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = poisson)
 
-summary(lm_F)
+lm_F1 = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom1)
 
-Anova(lm_F)
-emmeans(lm_F,specs =pairwise~Temp:PopStruct ,type= "response")
+lm_F2 = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom2)
+
+summary(lm_F1)
+AIC(lm_FP,lm_F1,lm_F2)
+
+Anova(lm_F1)
+emmeans(lm_F1,specs =pairwise~Temp:PopStruct ,type= "response")
 
 
 #plots
@@ -109,7 +119,7 @@ ggplot(data = gadata, aes(x = factor(Temp), y = Nr_Eggs, fill = PopStruct)) +
         axis.title.x = element_text(size = 10, face = "bold"), axis.title.y = element_text(size = 10, face = "bold"), plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))+
   ylab("Number of Eggs")+
   xlab("Temperature") +
-  ggtitle("Fecundity in different Population") 
+  ggtitle("Fecundity in different populations and treatments") 
 
 #hatching rate
 
@@ -124,20 +134,34 @@ ggplot(data = gadata, aes(x = factor(Temp), y = HatchingRate, fill = PopStruct))
         axis.title.x = element_text(size = 10, face = "bold"), axis.title.y = element_text(size = 10, face = "bold"), plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))+
   ylab("Hatching Rate")+
   xlab("Temperature") +
-  ggtitle("Hatching Rate in different Population") 
+  ggtitle("Hatching Rate in different populations and treatments") 
+
 
 #sexratio
+
 ggplot(data = gadata, aes(x = factor(Temp), y = SR, fill = PopStruct)) +
   geom_boxplot() +
   stat_summary(fun.y = "mean", geom = "point", shape = 18, size = 3, position = position_dodge(width = 0.75)) +
   stat_summary(fun.y = "mean", geom = "line", aes(group = PopStruct), position = position_dodge(width = 0.75)) +
- # facet_wrap(~ PopStruct)+
+  #facet_wrap(~ PopStruct) +
   theme(legend.position = "right", axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10),
-        axis.title.x = element_text(size = 10, face = "bold"), axis.title.y = element_text(size = 10, face = "bold"), plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))+
-  ylab("Sex Ratio")+
+        axis.title.x = element_text(size = 10, face = "bold"), axis.title.y = element_text(size = 10, face = "bold"), plot.title = element_text(hjust = 0.5, size = 10, face = "bold")) +
+  ylab("Sex Ratio") +
   xlab("Temperature") +
-  ggtitle("Sex Ratio in different Population") 
+  ggtitle("Sex Ratio in different populations and treatments") 
 
+#Try of new graph
+
+ggplot(data = gadata, aes(x = factor(Total_F), y = Dead_F)) +
+  geom_point(aes(color = Dead_F), position = position_jitter(width = 0.2, height = 0.2)) +
+  stat_summary(fun.y = "mean", geom = "point", color = "red", shape = 18, size = 3, position = position_dodge(width = 0.75)) +
+  scale_color_gradient(low = "blue", high = "red") +
+  facet_wrap(~ PopStruct) +
+  theme(legend.position = "right", axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 10, face = "bold"), axis.title.y = element_text(size = 10, face = "bold"), plot.title = element_text(hjust = 0.5, size = 10, face = "bold")) +
+  ylab("Dead Females") +
+  xlab("Total Females") +
+  ggtitle("Females and Dead")
 
 
 boxplot(gadata$SR ~ gadata$PopStruct*gadata$Temp) #nothing is relevant
