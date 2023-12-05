@@ -5,12 +5,7 @@ library(fitdistrplus)
 library(glmmTMB)
 library(ggplot2)
 library(car)
-library(lme4)
-library(lmerTest)
 library(emmeans)
-
-library(ggsignif)
-
 
 
 
@@ -19,25 +14,14 @@ gadata = read.table("Genes e Adaptação - Folha1.csv", header = T, sep = ";" ,s
 gadata
 
 #Summary
-summary(gadata) #still missing data
-str(gadata) #Locations some are coded in different ways
+summary(gadata) 
+str(gadata) 
 
 
-#distribution of data
 
-hist(gadata$Dead_F) #Mostly in 0 but half of 0 are 1
-hist(gadata$Total_F) #2 and 10 are common as expect
-hist(gadata$Nr_Eggs) #so many 0s
-hist(gadata$Nr_Juv) #same as eggs
-hist(gadata$HatchingRate) #not normal distrubuted
-hist(gadata$Nr_Female) #not much either
-hist(gadata$Nr_Male) #even less than female
-hist(gadata$SR) #not normal distributed to
-
-
-#var independentes/fix factors = popstruct e temp
-#var dependentes = sr e hr
-#random factors = block, Petridish, location? and dead_F? 
+#var independentes/fix factors = Popstruct e Temp
+#var dependentes = SR, HR and Fecundity
+#random factors = block and Group
 
 #models
 
@@ -53,25 +37,6 @@ descdist(as.numeric(na.omit(ola)), boot = 100, discrete = TRUE) #cannot tell dif
 
 descdist(as.numeric(na.omit(gadata$Nr_Eggs)), boot = 100, discrete = TRUE) #cannot tell difference in plot
 
-
-
-lm_HR = glmmTMB(cbind(Nr_Juv, Nr_Eggs) ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = "binomial")
-
-summary(lm_HR)
-
-boxplot(gadata$HatchingRate ~ gadata$PopStruct*gadata$Temp)
-
-Anova(lm_HR)
-emmeans(lm_HR,specs =pairwise~Temp:PopStruct ,type= "response")
-
-
-#lm_HR_nb <- glmmTMB(HatchingRate ~ PopStruct*Temp + (1|PetriDish) + (1|Block) + (1|Group), data = gadata, family=nbinom1, ziformula = ~1) #NA cant figure that out
-
-#if we do the poisson in the same way as nb its INF
-
-
-ola = cbind(gadata$Nr_Female, gadata$Nr_Male)
-ola
 
 #Model for SexRation
   
@@ -107,7 +72,7 @@ Anova(lm_F1)
 emmeans(lm_F1,specs =pairwise~Temp:PopStruct ,type= "response")
 
 
-#plots
+#Plots
 
 #fecundity
 ggplot(data = gadata, aes(x = factor(Temp), y = Fecundity, fill = PopStruct)) +
@@ -123,7 +88,6 @@ ggplot(data = gadata, aes(x = factor(Temp), y = Fecundity, fill = PopStruct)) +
 
 #hatching rate
 
-boxplot(gadata$HatchingRate ~ gadata$PopStruct*gadata$Temp) #between temps is clearly different, but not in the Structure
 
 ggplot(data = gadata, aes(x = factor(Temp), y = HatchingRate, fill = PopStruct)) +
   geom_boxplot() +
@@ -150,7 +114,7 @@ ggplot(data = gadata, aes(x = factor(Temp), y = SR, fill = PopStruct)) +
   xlab("Temperature") +
   ggtitle("Sex Ratio in different populations and treatments") 
 
-#Try of new graph
+#Try of new graph (Not used in paper)
 
 ggplot(data = gadata, aes(x = factor(Total_F), y = Dead_F)) +
   geom_point(aes(color = Dead_F), position = position_jitter(width = 0.2, height = 0.2)) +
@@ -164,16 +128,6 @@ ggplot(data = gadata, aes(x = factor(Total_F), y = Dead_F)) +
   ggtitle("Females and Dead")
 
 
-boxplot(gadata$SR ~ gadata$PopStruct*gadata$Temp) #nothing is relevant
+citation("car")
 
-meansr = mean(gadata$SR)
-
-boxplot(gadata$Nr_Eggs ~ gadata$PopStruct*gadata$Temp) #com addpoints
-
-#sr = cbind binominal
-
-#hr = cbind binominal
-
-#fecundity feito
-
-
+packageVersion('glmmTMB')
