@@ -44,6 +44,7 @@ lm_SR = glmmTMB(cbind(Nr_Female, Nr_Male) ~ PopStruct*Temp + (1|Block) + (1|Grou
 
 summary(lm_SR)
 
+anova(lm_SR)
 Anova(lm_SR)
 emmeans(lm_SR,specs =pairwise~Temp:PopStruct ,type= "response")
 
