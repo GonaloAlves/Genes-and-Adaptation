@@ -94,11 +94,11 @@ emmeans(lm_HR,specs =pairwise~Temp:PopStruct ,type= "response")
 
 #model for fecundity 
 
-lm_FP = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = poisson)
+lm_FP = glmmTMB(Fecundity ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = poisson)
 
-lm_F1 = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom1)
+lm_F1 = glmmTMB(Fecundity ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom1)
 
-lm_F2 = glmmTMB(Nr_Eggs ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom2)
+lm_F2 = glmmTMB(Fecundity ~ PopStruct*Temp + (1|Block) + (1|Group), data = gadata, family = nbinom2)
 
 summary(lm_F1)
 AIC(lm_FP,lm_F1,lm_F2)
@@ -110,14 +110,14 @@ emmeans(lm_F1,specs =pairwise~Temp:PopStruct ,type= "response")
 #plots
 
 #fecundity
-ggplot(data = gadata, aes(x = factor(Temp), y = Nr_Eggs, fill = PopStruct)) +
+ggplot(data = gadata, aes(x = factor(Temp), y = Fecundity, fill = PopStruct)) +
   geom_boxplot() +
   stat_summary(fun.y = "mean", geom = "point", shape = 18, size = 3, position = position_dodge(width = 0.75)) +
   stat_summary(fun.y = "mean", geom = "line", aes(group = PopStruct), position = position_dodge(width = 0.75)) +
  # facet_wrap(~ factor(Temp))+
   theme(legend.position = "right", axis.text.x = element_text(size = 10), axis.text.y = element_text(size = 10),
         axis.title.x = element_text(size = 10, face = "bold"), axis.title.y = element_text(size = 10, face = "bold"), plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))+
-  ylab("Number of Eggs")+
+  ylab("Fecundity")+
   xlab("Temperature") +
   ggtitle("Fecundity in different populations and treatments") 
 
